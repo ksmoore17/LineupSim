@@ -19,3 +19,15 @@ games
 orders
   cycle through all possible orders
   create 162 games
+
+lineup-optimize
+  create 9 players with stats or select real players
+    export or import
+  test
+    all orders (optimize)
+    user defined orders
+  set pitcher profile
+    simple average
+    randomize
+    light randomize to profile
+  gui
