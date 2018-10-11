@@ -1,0 +1,21 @@
+batters
+  create a list of batters with true talents from season rate stats for 100+ PA
+    (single, double, triple, HR, bb, k, ibb eventually with affinities between linked stats)
+    create a list of plate appearances for each batter based on true talent
+    create list of true talent intermediate stats
+    dont need season stats
+teams
+  create list of teams
+    populate teams with 9 batters
+    ban best and worst players by wOBA from occupying worst and best spots if performance requires
+games
+  create games with a teams batters
+    compare random number with players stats
+    search events dict with pa outcome and base/out situation
+    use value of dict to generate final base/out and increment runs from random order
+    increment and evaluate until 3 outs, cycle to new inning, repeat
+    end with 9 innings, log game runs scored
+
+orders
+  cycle through all possible orders
+  create 162 games
