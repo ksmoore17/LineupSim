@@ -1,6 +1,9 @@
 batters
   create a list of batters with true talents from season rate stats for 100+ PA
     (single, double, triple, HR, bb, k, ibb eventually with affinities between linked stats)
+      get list of all season stat outcomes
+      bin and count for each stat
+      randomly assign true talent from the generated distribution for the stat
     create a list of plate appearances for each batter based on true talent
     create list of true talent intermediate stats
     dont need season stats

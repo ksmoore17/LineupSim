@@ -3,28 +3,17 @@ import CSV
 module Batter
 export CreateBatter()
 
-function CreateBatter()
+function CreateBatter(talentfreqs)
     player = Dict{String, Number}()
 
-
-    talents = [
-        "singles",
-        "doubles",
-        "triples",
-        "homeruns",
-        "walks",
-        "strikeouts",
-        "intentional_walks",
-        "hbp"
-        ]
-
-    for talent in talents
-        player[talent] = TrueTalent(talent)
+    for talent in talentsfreqs
+        #player[talent.key] = TalentGen(talent.value)
     end
 end
 
-function TrueTalent(talent)
-    #csv.talent
+"""
+function TalentGen(talentdist)
+    return talentstat
 end
-
+"""
 end

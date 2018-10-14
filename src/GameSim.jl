@@ -1,7 +1,7 @@
 module GameSim
-export Game
+export Sim
 
-function Game(order::Array)
+function Sim(order::Array)
     runs = 0
     inning = 0
 
