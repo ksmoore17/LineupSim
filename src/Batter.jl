@@ -1,7 +1,7 @@
 import CSV
 
 module Batter
-export CreateBatter()
+export CreateBatter
 
 function CreateBatter(talentfreqs)
     player = Dict{String, Number}()
