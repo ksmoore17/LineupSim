@@ -8,7 +8,7 @@ include("./Team.jl")
 function Sim()
     team = Team.CreateTeam()
     teamruns = Dict{Array, Matrix}()
-    
+
     orders = Combinatorics.permutations(1:9)
     bannedorders = BanOrders(team)
 
@@ -31,4 +31,6 @@ function BanOrders(team, banbest = 3, banworst = 3)
     end
 
     return bannedorders
+end
+
 end
