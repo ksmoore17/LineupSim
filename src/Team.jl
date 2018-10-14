@@ -12,16 +12,16 @@ function CreateTeam()
         "data",
         "talent",
         "talent.csv")))
-    talentfreqs = Dict{String, Tuple}()
+    talentdists = Dict{String, Tuple}()
 
     binamount = convert(Int, round(log(2, length(talentframe[1])) + 1))
 
     for statname in names(talentframe)
-        talentfreqs[string(statname)] = TalentFreq(talentframe[statname], binamount)
+        talentdists[string(statname)] = TalentFreq(talentframe[statname], binamount)
     end
 
     for i in 1:9
-        team[i] = Batter.CreateBatter(talentfreqs)
+        team[i] = Batter.CreateBatter(talentdists)
     end
     return team
 end
