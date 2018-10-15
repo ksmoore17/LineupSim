@@ -1,19 +1,18 @@
-import CSV
-
 module Batter
 export CreateBatter
 
-function CreateBatter(talentfreqs)
+import StatsBase
+import Distributions
+
+function CreateBatter(talentdists)
     player = Dict{String, Number}()
 
-    for talent in talentsfreqs
-        #player[talent.key] = TalentGen(talent.value)
+    for (talent, talentdist) in pairs(talentdists)
+        talentrange = StatsBase.sample(talentdist[1], StatsBase.FrequencyWeights(talentdist[2]))
+        player[talent] = rand(Distributions.Uniform(talentrange[1], talentrange[2]))
     end
+
+    return(player)
 end
 
-"""
-function TalentGen(talentdist)
-    return talentstat
-end
-"""
 end
