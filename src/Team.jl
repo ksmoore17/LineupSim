@@ -5,7 +5,7 @@ include("./Batter.jl")
 import DataFrames, CSV
 
 function CreateTeam()
-    team = Vector{Dict}(undef, 1603)
+    team = Vector{Dict}(undef, 9)
 
     talentframe = DataFrames.DataFrame(CSV.File(joinpath(@__DIR__,
         "..",
@@ -14,13 +14,13 @@ function CreateTeam()
         "talent.csv")))
     talentdists = Dict{String, Tuple}()
 
-    binamount = convert(Int, 2 * round(log(2, length(talentframe[1])) + 1))
+    binamount = convert(Int, round(log(2, length(talentframe[1])) + 1))
 
     for statname in names(talentframe)
         talentdists[string(statname)] = TalentFreq(talentframe[statname], binamount)
     end
 
-    for i in 1:1603
+    for i in 1:9
         team[i] = Batter.CreateBatter(talentdists)
     end
 
