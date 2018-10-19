@@ -1,9 +1,26 @@
 module Team
-export CreateTeam
 
-import DataFrames, CSV, StatsBase, Distributions
+import Combinatorics, DataFrames, CSV, StatsBase, Distributions
 
-function CreateTeam(teamsize = 9)
+include("./Order.jl")
+
+function Sim()
+    team = Create()
+    teamruns = Dict{Array, Matrix}()
+
+    (lowteambans, highteambans) = BanBatters(team)
+
+    for order in Combinatorics.permutations(1:9)
+        if any(x -> x in order[1:3], lowteambans) || any(x -> x in order[7:9], highteambans)
+            continue
+        else
+            continue
+            teamruns[order] = Order.Sim(order, team, 5)
+        end
+    end
+end
+
+function Create(teamsize = 9)
     team = Vector{Dict}(undef, teamsize)
 
     talentframe = DataFrames.DataFrame(CSV.File(joinpath(@__DIR__,
@@ -64,10 +81,6 @@ function TalentFreq(talentsample, binamount, prebinbounds = [], prebinfreqs = Ve
     return (vcat(prebinbounds, binbounds), vcat(prebinfreqs, binfreqs))
 end
 
-function OrderBans(team)
-
-end
-
 function CreateBatter(talentdists)
     player = Dict{Symbol, Number}()
     for (talent, talentdist) in pairs(talentdists)
@@ -92,6 +105,31 @@ function CreateBatter(talentdists)
         / (1 - ibb - .007))
 
     return player
+end
+
+function BanBatters(team::Array, banbest = 3, banworst = 3)
+    lowteambans = Vector{}()
+    highteambans = Vector{}()
+    bannedorders = Vector{Vector}()
+
+    idwoba = Dict{}()
+
+    for i in 1:length(team)
+        idwoba[i] = team[i][:wOBA]
+    end
+
+    lowwOBAbans = sort(collect(values(idwoba)))[1:3]
+    highwOBAbans = sort(collect(values(idwoba)))[7:9]
+
+    for (index, value) in pairs(idwoba)
+        if value in lowwOBAbans
+            push!(lowteambans, index)
+        elseif value in highwOBAbans
+            push!(highteambans, index)
+        end
+    end
+
+    return (lowteambans, highteambans)
 end
 
 end
