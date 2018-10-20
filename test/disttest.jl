@@ -7,5 +7,5 @@ import JSON
 
 outfile = joinpath(@__DIR__, "./testout.json")
 f = open(outfile, "w")
-JSON.print(f, Team.CreateTeam())
+JSON.print(f, Team.Create())
 close(f)
