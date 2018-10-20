@@ -26,7 +26,7 @@ function Create(teamsize = 9)
     talentframe = DataFrames.DataFrame(CSV.File(joinpath(@__DIR__,
         "..",
         "data",
-        "talent",
+        "talents",
         "talent.csv")))
     talentdists = Dict{String, Tuple}()
 
