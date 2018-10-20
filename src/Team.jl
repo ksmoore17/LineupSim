@@ -1,26 +1,9 @@
 module Team
+export Create
 
-import Combinatorics, DataFrames, CSV, StatsBase, Distributions
+import DataFrames, CSV, StatsBase, Distributions
 
-include("./Order.jl")
-
-function Sim()
-    team = Create()
-    teamruns = Dict{Array, Matrix}()
-
-    (lowteambans, highteambans) = BanBatters(team)
-
-    for order in Combinatorics.permutations(1:9)
-        if any(x -> x in order[1:3], lowteambans) || any(x -> x in order[7:9], highteambans)
-            continue
-        else
-            continue
-            teamruns[order] = Order.Sim(order, team, 5)
-        end
-    end
-end
-
-function Create(teamsize = 9)
+function Create(teamsize::Int = 9)
     team = Vector{Dict}(undef, teamsize)
 
     talentframe = DataFrames.DataFrame(CSV.File(joinpath(@__DIR__,
@@ -34,11 +17,13 @@ function Create(teamsize = 9)
 
     for statname in names(talentframe)
         if statname in [:X3B, :HBP, :IBB, :HR, :SF, :SH]
-            talentdists[statname] = TalentFreq(filter(
-                x -> x != 0, talentframe[statname]),
+            talentdists[statname] = TalentFreq(
+                filter(x -> x != 0, talentframe[statname]),
                 binamount - 1,
                 [(0, 0)],
-                [length(filter(x -> x == 0, talentframe[statname]))])
+                [length(filter(x -> x == 0, talentframe[statname]))]
+                )
+
         elseif statname != "Column1"
             talentdists[statname] = TalentFreq(talentframe[statname], binamount)
         end
@@ -51,7 +36,12 @@ function Create(teamsize = 9)
     return team
 end
 
-function TalentFreq(talentsample, binamount, prebinbounds = [], prebinfreqs = Vector{Int}(undef, 0))
+function TalentFreq(talentsample::Array,
+    binamount::Int,
+    prebinbounds::Array = [],
+    prebinfreqs::Array = Vector{Int}(undef, 0)
+    )
+
     statmax = maximum(talentsample) + .0000001
     statmin = minimum(talentsample)
 
@@ -81,7 +71,7 @@ function TalentFreq(talentsample, binamount, prebinbounds = [], prebinfreqs = Ve
     return (vcat(prebinbounds, binbounds), vcat(prebinfreqs, binfreqs))
 end
 
-function CreateBatter(talentdists)
+function CreateBatter(talentdists::Dict)
     player = Dict{Symbol, Number}()
     for (talentname, talentdist) in pairs(talentdists)
         talentrange = StatsBase.sample(talentdist[1], StatsBase.FrequencyWeights(talentdist[2]))
@@ -112,31 +102,6 @@ function CreateBatter(talentdists)
         / (ab + player[:UBB] + player[:SF] + player[:HBP]))
 
     return player
-end
-
-function BanBatters(team::Array, banbest = 3, banworst = 3)
-    lowteambans = Vector{}()
-    highteambans = Vector{}()
-    bannedorders = Vector{Vector}()
-
-    idwoba = Dict{}()
-
-    for i in 1:length(team)
-        idwoba[i] = team[i][:wOBA]
-    end
-
-    lowwOBAbans = sort(collect(values(idwoba)))[1:3]
-    highwOBAbans = sort(collect(values(idwoba)))[7:9]
-
-    for (index, value) in pairs(idwoba)
-        if value in lowwOBAbans
-            push!(lowteambans, index)
-        elseif value in highwOBAbans
-            push!(highteambans, index)
-        end
-    end
-
-    return (lowteambans, highteambans)
 end
 
 end
