@@ -28,19 +28,19 @@ function Create(teamsize = 9)
         "data",
         "talents",
         "talent.csv")))
-    talentdists = Dict{String, Tuple}()
+    talentdists = Dict{Symbol, Tuple}()
 
     binamount = convert(Int, round(log(2, length(talentframe[1])) + 1))
 
     for statname in names(talentframe)
-        if statname in [:triples, :hbp, :intentional_walks, :homeruns]
-            talentdists[string(statname)] = TalentFreq(filter(
+        if statname in [:X3B, :HBP, :IBB, :HR, :SF, :SH]
+            talentdists[statname] = TalentFreq(filter(
                 x -> x != 0, talentframe[statname]),
                 binamount - 1,
                 [(0, 0)],
                 [length(filter(x -> x == 0, talentframe[statname]))])
-        else
-            talentdists[string(statname)] = TalentFreq(talentframe[statname], binamount)
+        elseif statname != "Column1"
+            talentdists[statname] = TalentFreq(talentframe[statname], binamount)
         end
     end
 
@@ -83,26 +83,33 @@ end
 
 function CreateBatter(talentdists)
     player = Dict{Symbol, Number}()
-    for (talent, talentdist) in pairs(talentdists)
+    for (talentname, talentdist) in pairs(talentdists)
         talentrange = StatsBase.sample(talentdist[1], StatsBase.FrequencyWeights(talentdist[2]))
         if talentrange[2] == 0
-            player[Symbol(talent)] = 0
+            player[talentname] = 0
         else
-            player[Symbol(talent)] = rand(Distributions.Uniform(talentrange[1], talentrange[2]))
+            player[talentname] = rand(Distributions.Uniform(talentrange[1], talentrange[2]))
         end
     end
 
-    h = player[:singles] + player[:doubles] + player[:triples] + player[:homeruns]
-    ab = 1 - player[:walks] - player[:hbp] - .007 - .0078 - .000137
-    player[:ba] = h / ab
-    player[:obp] = (h + player[:walks] + player[:hbp]) / (1 - .0078 - .000137)
-    player[:slg] = (player[:singles] + 2 * player[:doubles] + 3 * player[:triples] + 4 * player[:homeruns]) / ab
-    player[:ops] = player[:obp] + player[:slg]
-    ibb = player[:walks] * player[:intentional_walks]
-    ubb = player[:walks] - ibb
-    player[:wOBA] = ((.7*(ubb + player[:hbp]) + .9 * player[:singles] +
-        1.25 * player[:doubles] + 1.6 * player[:triples] + 2 * player[:homeruns])
-        / (1 - ibb - .007))
+    di = .000137
+
+    walks = player[:UBB] + player[:IBB]
+    h = player[:X1B] + player[:X2B] + player[:X2B] + player[:HR]
+    ab = 1 - walks - player[:HBP] - player[:SH] - player[:SF] - di
+
+    player[:BA] = h / ab
+
+    player[:OBP] = ((h + walks + player[:HBP]) /
+        (ab + walks + player[:HBP] + player[:SF]))
+
+    player[:SLG] = (player[:X1B] + 2 * player[:X2B] + 3 * player[:X3B] + 4 * player[:HR]) / ab
+
+    player[:OPS] = player[:OBP] + player[:SLG]
+
+    player[:wOBA] = ((.7*(player[:UBB] + player[:HBP]) + .9 * player[:X1B] +
+        1.25 * player[:X2B] + 1.6 * player[:X3B] + 2 * player[:HR])
+        / (ab + player[:UBB] + player[:SF] + player[:HBP]))
 
     return player
 end
