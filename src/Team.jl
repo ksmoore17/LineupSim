@@ -10,7 +10,7 @@ function Create(teamsize::Int = 9)
         "..",
         "data",
         "talents",
-        "talent.csv")))
+        "talents.csv")))
     talentdists = Dict{Symbol, Tuple}()
 
     binamount = convert(Int, round(log(2, length(talentframe[1])) + 1))
