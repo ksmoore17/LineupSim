@@ -25,7 +25,7 @@ function Create(teamsize::Int = 9)
                 )
 
         elseif statname != "Column1"
-            talentdists[statname] = TalentFreq(talentframe[statname], binamount)
+            talentdists[statname] = TalentsFreqs(talentframe[statname], binamount)
         end
     end
 
@@ -36,7 +36,7 @@ function Create(teamsize::Int = 9)
     return team
 end
 
-function TalentFreq(talentsample::Array,
+function TalentsFreqs(talentsample::Array,
     binamount::Int,
     prebinbounds::Array = [],
     prebinfreqs::Array = Vector{Int}(undef, 0)
