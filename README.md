@@ -1,1 +1,1 @@
-# lineup-optimize
+# LineupSim
