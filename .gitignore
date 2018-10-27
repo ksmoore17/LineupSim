@@ -4,3 +4,7 @@
 deps/deps.jl
 .DS_Store
 extra/
+talentanalysis.R
+.RData
+.Rhistory
+*.ipynb
