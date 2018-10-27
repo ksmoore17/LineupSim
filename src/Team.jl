@@ -1,10 +1,5 @@
-module Team
-export Create
-
-import DataFrames, CSV, StatsBase, Distributions
-
-function Create(teamsize::Int = 9)
-    team = Vector{Dict}(undef, teamsize)
+function createteam(teamsize::Int = 9)
+    team = Vector{Tuple}(undef, teamsize)
 
     talentframe = DataFrames.DataFrame(CSV.File(joinpath(@__DIR__,
         "..",
@@ -17,26 +12,26 @@ function Create(teamsize::Int = 9)
 
     for statname in names(talentframe)
         if statname in [:X3B, :HBP, :IBB, :HR, :SF, :SH]
-            talentdists[statname] = TalentFreq(
+            talentdists[statname] = talentsfreqs(
                 filter(x -> x != 0, talentframe[statname]),
                 binamount - 1,
                 [(0, 0)],
                 [length(filter(x -> x == 0, talentframe[statname]))]
                 )
 
-        elseif statname != "Column1"
-            talentdists[statname] = TalentsFreqs(talentframe[statname], binamount)
+        elseif statname != :Column1
+            talentdists[statname] = talentsfreqs(talentframe[statname], binamount)
         end
     end
 
     for i in 1:teamsize
-        team[i] = CreateBatter(talentdists)
+        team[i] = createbatter(talentdists)
     end
 
     return team
 end
 
-function TalentsFreqs(talentsample::Array,
+function talentsfreqs(talentsample::Array,
     binamount::Int,
     prebinbounds::Array = [],
     prebinfreqs::Array = Vector{Int}(undef, 0)
@@ -71,37 +66,45 @@ function TalentsFreqs(talentsample::Array,
     return (vcat(prebinbounds, binbounds), vcat(prebinfreqs, binfreqs))
 end
 
-function CreateBatter(talentdists::Dict)
-    player = Dict{Symbol, Number}()
+function createbatter(talentdists::Dict)
+    player = Tuple{Dict}
+    talentdict = Dict{Symbol, Float64}()
+    ratedict = Dict{Symbol, Float64}()
+
+    talentdict[:BIP] = 0
+
     for (talentname, talentdist) in pairs(talentdists)
         talentrange = StatsBase.sample(talentdist[1], StatsBase.FrequencyWeights(talentdist[2]))
         if talentrange[2] == 0
-            player[talentname] = 0
+            talentdict[talentname] = 0
         else
-            player[talentname] = rand(Distributions.Uniform(talentrange[1], talentrange[2]))
+            statvalue = rand(Distributions.Uniform(talentrange[1], talentrange[2]))
+            talentdict[talentname] = statvalue
+            talentdict[:BIP] -= statvalue
         end
     end
 
     di = .000137
 
-    walks = player[:UBB] + player[:IBB]
-    h = player[:X1B] + player[:X2B] + player[:X2B] + player[:HR]
-    ab = 1 - walks - player[:HBP] - player[:SH] - player[:SF] - di
+    walks = talentdict[:UBB] + talentdict[:IBB]
+    h = talentdict[:X1B] + talentdict[:X2B] + talentdict[:X2B] + talentdict[:HR]
+    ab = 1 - walks - talentdict[:HBP] - talentdict[:SH] - talentdict[:SF] - di
 
-    player[:BA] = h / ab
+    ratedict[:BA] = h / ab
 
-    player[:OBP] = ((h + walks + player[:HBP]) /
-        (ab + walks + player[:HBP] + player[:SF]))
+    ratedict[:OBP] = ((h + walks + talentdict[:HBP]) /
+        (ab + walks + talentdict[:HBP] + talentdict[:SF]))
 
-    player[:SLG] = (player[:X1B] + 2 * player[:X2B] + 3 * player[:X3B] + 4 * player[:HR]) / ab
+    ratedict[:SLG] = (talentdict[:X1B] + 2 * talentdict[:X2B] + 3 *
+        talentdict[:X3B] + 4 * talentdict[:HR]) / ab
 
-    player[:OPS] = player[:OBP] + player[:SLG]
+    ratedict[:OPS] = ratedict[:OBP] + ratedict[:SLG]
 
-    player[:wOBA] = ((.7*(player[:UBB] + player[:HBP]) + .9 * player[:X1B] +
-        1.25 * player[:X2B] + 1.6 * player[:X3B] + 2 * player[:HR])
-        / (ab + player[:UBB] + player[:SF] + player[:HBP]))
+    ratedict[:wOBA] = ((.7*(talentdict[:UBB] + talentdict[:HBP]) + .9 * talentdict[:X1B] +
+        1.25 * talentdict[:X2B] + 1.6 * talentdict[:X3B] + 2 * talentdict[:HR])
+        / (ab + talentdict[:UBB] + talentdict[:SF] + talentdict[:HBP]))
+
+    player = (talentdict, ratedict)
 
     return player
-end
-
 end

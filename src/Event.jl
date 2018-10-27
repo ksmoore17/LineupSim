@@ -1,9 +1,4 @@
-module Event
-export EventFreq, PlateAppearance, NonBatter
-
-import CSV
-
-function EventFreq()
+function eventfreq()
     eventfreqs = Dict{Tuple, Array}()
 
     file = CSV.File((joinpath(@__DIR__,
@@ -51,12 +46,21 @@ function EventFreq()
     return eventfreqs
 end
 
-function PlateAppearance(player::Dict)
-    
+function plateappearance(batter::Dict, events::Dict, initbasecd::Integer, initouts::Integer)
+    psum = 0
+    p = rand()
+    for stat in keys(batter)
+        if psum < p < psum + batter[stat]
+            eventoutcomes = (stat, initbasecd, initouts)
+            eventouput = StatsBase.sample(eventoutcomes[1],
+                StatsBase.FrequencyWeights(eventoutcomes[2]))
+            return eventouput
+        else
+            psum += batter[stat]
+        end
+    end
 end
 
-function NonBatter()
+function nonbatter()
     #generate nbe based on game state
-end
-
 end
