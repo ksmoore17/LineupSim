@@ -71,24 +71,29 @@ function createbatter(talentdists::Dict)
     talentdict = Dict{Symbol, Float64}()
     ratedict = Dict{Symbol, Float64}()
 
-    talentdict[:BIP] = 0
+    bip = 1
 
     for (talentname, talentdist) in pairs(talentdists)
         talentrange = StatsBase.sample(talentdist[1], StatsBase.FrequencyWeights(talentdist[2]))
         if talentrange[2] == 0
             talentdict[talentname] = 0
         else
-            statvalue = rand(Distributions.Uniform(talentrange[1], talentrange[2]))
-            talentdict[talentname] = statvalue
-            talentdict[:BIP] -= statvalue
+            talentvalue = rand(Distributions.Uniform(talentrange[1], talentrange[2]))
+            talentdict[talentname] = talentvalue
+            bip -= talentvalue
         end
     end
+
+    talentdict[:BIP] = bip
 
     di = .000137
 
     walks = talentdict[:UBB] + talentdict[:IBB]
-    h = talentdict[:X1B] + talentdict[:X2B] + talentdict[:X2B] + talentdict[:HR]
+    h = talentdict[:X1B] + talentdict[:X2B] + talentdict[:X3B] + talentdict[:HR]
     ab = 1 - walks - talentdict[:HBP] - talentdict[:SH] - talentdict[:SF] - di
+
+    talentdict[:H] = h
+    talentdict[:AB] = ab
 
     ratedict[:BA] = h / ab
 
