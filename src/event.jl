@@ -36,8 +36,13 @@ function eventfreq()
         eventinput = (eventcd, initbasecd, initouts)
 
         if haskey(eventfreqs, eventinput)
-            push!(eventfreqs[eventinput][1], eventoutput)
-            push!(eventfreqs[eventinput][2], event.freq)
+            if eventoutput in eventfreqs[eventinput][1]
+                i = findfirst(x -> x == eventoutput, eventfreqs[eventinput][1])
+                eventfreqs[eventinput][2][i] += event.freq
+            else
+                push!(eventfreqs[eventinput][1], eventoutput)
+                push!(eventfreqs[eventinput][2], event.freq)
+            end
         else
             eventfreqs[eventinput] = [[eventoutput], [event.freq]]
         end
@@ -46,17 +51,23 @@ function eventfreq()
     return eventfreqs
 end
 
-function plateappearance(batter::Dict, events::Dict, initbasecd::Integer, initouts::Integer)
-    psum = 0
-    p = rand()
-    for stat in keys(batter)
-        if psum < p < psum + batter[stat]
-            eventoutcomes = (stat, initbasecd, initouts)
-            eventouput = StatsBase.sample(eventoutcomes[1],
-                StatsBase.FrequencyWeights(eventoutcomes[2]))
-            return eventouput
-        else
-            psum += batter[stat]
+function plateappearance(batter::Tuple, events::Dict, initbasecd::Integer, initouts::Integer)
+    while true
+        try
+            psum = 0
+            p = rand()
+            for (stat, statvalue) in pairs(batter[1])
+                if psum < p < psum + statvalue
+                    eventoutcomes = events[(stat, initbasecd, initouts)]
+                    eventoutput = StatsBase.sample(eventoutcomes[1],
+                        StatsBase.FrequencyWeights(eventoutcomes[2]))
+                    return eventoutput
+                else
+                    psum += statvalue
+                end
+            end
+        catch
+            continue
         end
     end
 end

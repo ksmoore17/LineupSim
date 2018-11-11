@@ -6,7 +6,7 @@ include("team.jl")
 include("event.jl")
 
 function sim(seasons::Int = 1, games::Int = 162)
-    team = Team.create()
+    team = createteam()
     teamruns = Dict{Array, Matrix}()
 
     (lowteambans, highteambans) = banbatters(team)
@@ -14,38 +14,36 @@ function sim(seasons::Int = 1, games::Int = 162)
     orderrunslist = Vector{Tuple}(undef, 10)
     runslist = Vector{Int}(undef, games * seasons)
 
+    events = eventfreq()
+
     for order in Combinatorics.permutations(1:9)
         if any(x -> x in order[1:3], lowteambans) || any(x -> x in order[7:9], highteambans)
             continue
         else
             for game in 1:games * seasons
-                runslist[game] = gamesim(order, team)
+                runslist[game] = gamesim(order, team, events)
             end
         end
         orderrunslist(Tuple(order..., runslist))
     end
-
 end
 
-function gamesim(order::Array, team::Array)
+function gamesim(order::Array, team::Array, events::Dict)
     runs = 0
-    inning = 0
+    inning = 1
     b = 1
-
-    events = Event.eventsfreqs()
 
     while inning < 10
         basecd = 0
         outs = 0
 
-        while outs != 3
-            (outsinc, basecd, runsinc) = plateappearance(order[b], events, basecd, outs)
+        while outs < 3
+            (basecd, outsinc, runsinc) = plateappearance(team[order[b]], events, basecd, outs)
             runs += runsinc
             outs += outsinc
-            (basecd, outs) = Event.nonbatter(basecd)
+            #(basecd, runsinc, outsinc) = Event.nonbatter(basecd)
             b = (b % 9) + 1
         end
-
         inning += 1
     end
 
