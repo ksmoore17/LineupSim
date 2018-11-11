@@ -11,12 +11,18 @@ function sim(seasons::Int = 1, games::Int = 162)
 
     (lowteambans, highteambans) = banbatters(team)
 
-    orderrunslist = Vector{Tuple}(undef, 10)
-    runslist = Vector{Int}(undef, games * seasons)
+    orderrunslist = []
 
     events = eventfreq()
 
+    i = 0
+
     for order in Combinatorics.permutations(1:9)
+        i += 1
+        if i % 100 == 0
+            print(string("Order: ", i, "\r      "))
+        end
+        runslist = Vector{Int}(undef, games * seasons)
         if any(x -> x in order[1:3], lowteambans) || any(x -> x in order[7:9], highteambans)
             continue
         else
@@ -24,8 +30,12 @@ function sim(seasons::Int = 1, games::Int = 162)
                 runslist[game] = gamesim(order, team, events)
             end
         end
-        orderrunslist(Tuple(order..., runslist))
+        push!(orderrunslist, tuple(order..., runslist))
+
+
     end
+    return orderrunslist
+
 end
 
 function gamesim(order::Array, team::Array, events::Dict)
