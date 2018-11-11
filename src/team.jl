@@ -6,6 +6,7 @@ function createteam(teamsize::Int = 9)
         "data",
         "talents",
         "talents.csv")))
+
     talentdists = Dict{Symbol, Tuple}()
 
     binamount = convert(Int, round(log(2, length(talentframe[1])) + 1))
@@ -25,7 +26,7 @@ function createteam(teamsize::Int = 9)
     end
 
     for i in 1:teamsize
-        team[i] = createbatter(talentdists)
+        team[i] = createbatter(talentdists, namefreqs())
     end
 
     return team
@@ -66,12 +67,17 @@ function talentsfreqs(talentsample::Array,
     return (vcat(prebinbounds, binbounds), vcat(prebinfreqs, binfreqs))
 end
 
-function createbatter(talentdists::Dict)
+function createbatter(talentdists::Dict, namestup::Tuple)
     player = Tuple{Dict}
     talentdict = Dict{Symbol, Float64}()
     aggdict = Dict{Symbol, Float64}()
 
     bip = 1
+
+    firstname = StatsBase.sample(namestup[1][1], StatsBase.FrequencyWeights(namestup[1][2]))
+    lastname = StatsBase.sample(namestup[2][1], StatsBase.FrequencyWeights(namestup[2][2]))
+
+    name = string(firstname, " ", lastname)
 
     for (talentname, talentdist) in pairs(talentdists)
         talentrange = StatsBase.sample(talentdist[1], StatsBase.FrequencyWeights(talentdist[2]))
@@ -118,7 +124,43 @@ function createbatter(talentdists::Dict)
         1.25 * talentdict[:X2B] + 1.6 * talentdict[:X3B] + 2 * talentdict[:HR])
         / (ab + talentdict[:UBB] + aggdict[:SF] + talentdict[:HBP]))
 
-    player = (talentdict, aggdict)
+    player = (talentdict, aggdict, name)
 
     return player
+end
+
+function namefreqs()
+    firstnames = Vector{String}(undef, 0)
+    firstnamefreqs = Vector{Int}(undef, 0)
+
+    firstnamesfile = CSV.File(joinpath(@__DIR__,
+        "..",
+        "data",
+        "names",
+        "firstnames.csv"))
+
+    for row in firstnamesfile
+        push!(firstnames, row.x)
+        push!(firstnamefreqs, row.freq)
+    end
+
+    firstnamestup = (firstnames, firstnamefreqs)
+
+    lastnames = Vector{String}(undef, 0)
+    lastnamefreqs = Vector{Int}(undef, 0)
+
+    lastnamesfile = CSV.File(joinpath(@__DIR__,
+        "..",
+        "data",
+        "names",
+        "lastnames.csv"))
+
+    for row in lastnamesfile
+        push!(lastnames, row.x)
+        push!(lastnamefreqs, row.freq)
+    end
+
+    lastnamestup = (lastnames, lastnamefreqs)
+
+    return (firstnamestup, lastnamestup)
 end
