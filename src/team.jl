@@ -69,18 +69,27 @@ end
 function createbatter(talentdists::Dict)
     player = Tuple{Dict}
     talentdict = Dict{Symbol, Float64}()
-    ratedict = Dict{Symbol, Float64}()
+    aggdict = Dict{Symbol, Float64}()
 
     bip = 1
 
     for (talentname, talentdist) in pairs(talentdists)
         talentrange = StatsBase.sample(talentdist[1], StatsBase.FrequencyWeights(talentdist[2]))
         if talentrange[2] == 0
-            talentdict[talentname] = 0
+            if talentname != :SH && talentname != :SF
+                talentdict[talentname] = 0
+            else
+                aggdict[talentname] = 0
+            end
         else
             talentvalue = rand(Distributions.Uniform(talentrange[1], talentrange[2]))
-            talentdict[talentname] = talentvalue
-            bip -= talentvalue
+
+            if talentname != :SH && talentname != :SF
+                talentdict[talentname] = talentvalue
+                bip -= talentvalue
+            else
+                aggdict[talentname] = talentvalue
+            end
         end
     end
 
@@ -90,26 +99,26 @@ function createbatter(talentdists::Dict)
 
     walks = talentdict[:UBB] + talentdict[:IBB]
     h = talentdict[:X1B] + talentdict[:X2B] + talentdict[:X3B] + talentdict[:HR]
-    ab = 1 - walks - talentdict[:HBP] - talentdict[:SH] - talentdict[:SF] - di
+    ab = 1 - walks - talentdict[:HBP] - aggdict[:SH] - aggdict[:SF] - di
 
-    talentdict[:H] = h
-    talentdict[:AB] = ab
+    aggdict[:H] = h
+    aggdict[:AB] = ab
 
-    ratedict[:BA] = h / ab
+    aggdict[:BA] = h / ab
 
-    ratedict[:OBP] = ((h + walks + talentdict[:HBP]) /
-        (ab + walks + talentdict[:HBP] + talentdict[:SF]))
+    aggdict[:OBP] = ((h + walks + talentdict[:HBP]) /
+        (ab + walks + talentdict[:HBP] + aggdict[:SF]))
 
-    ratedict[:SLG] = (talentdict[:X1B] + 2 * talentdict[:X2B] + 3 *
+    aggdict[:SLG] = (talentdict[:X1B] + 2 * talentdict[:X2B] + 3 *
         talentdict[:X3B] + 4 * talentdict[:HR]) / ab
 
-    ratedict[:OPS] = ratedict[:OBP] + ratedict[:SLG]
+    aggdict[:OPS] = aggdict[:OBP] + aggdict[:SLG]
 
-    ratedict[:wOBA] = ((.7*(talentdict[:UBB] + talentdict[:HBP]) + .9 * talentdict[:X1B] +
+    aggdict[:wOBA] = ((.7*(talentdict[:UBB] + talentdict[:HBP]) + .9 * talentdict[:X1B] +
         1.25 * talentdict[:X2B] + 1.6 * talentdict[:X3B] + 2 * talentdict[:HR])
-        / (ab + talentdict[:UBB] + talentdict[:SF] + talentdict[:HBP]))
+        / (ab + talentdict[:UBB] + aggdict[:SF] + talentdict[:HBP]))
 
-    player = (talentdict, ratedict)
+    player = (talentdict, aggdict)
 
     return player
 end
