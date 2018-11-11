@@ -9,3 +9,4 @@ talentanalysis.R
 .Rhistory
 .ipynb
 *.json
+.ipynb_checkpoints/
