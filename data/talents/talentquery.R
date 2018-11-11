@@ -1,5 +1,10 @@
 library("Lahman")
 library("dplyr")
+library("rstudioapi")
+
+current_path <- getActiveDocumentContext()$path 
+
+setwd(dirname(current_path))
 
 b <- Batting[Batting$yearID > 2011,]
 
@@ -18,7 +23,7 @@ batters <- data.frame("X1B" = (b$H - b$X2B - b$X3B - b$HR)/b$PA,
                       "SH" = b$SH/b$PA,
                       "SF" = b$SF/b$PA)
 
-write.csv(batters, "./talents/talent.csv")
+write.csv(batters, "./talent.csv")
 
 b$OBP <- (batters$X1B + batters$X2B + batters$X3B + batters$HR + batters$UBB + batters$IBB + batters$HBP) / (1 - batters$SH - .000137)
 b
